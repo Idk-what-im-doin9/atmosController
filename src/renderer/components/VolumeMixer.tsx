@@ -3,6 +3,95 @@ import { useAudioStore } from '../stores/audioStore'
 import { audioService } from '../services/audioService'
 import { motion, AnimatePresence } from 'framer-motion'
 
+interface AudioSession {
+  id: string
+  name: string
+  volume: number
+  isMuted: boolean
+  appName: string
+  pid?: number
+}
+
+const SessionControl = memo(function SessionControl({
+  session,
+  volume,
+  onVolumeChange,
+  onMuteToggle,
+  onDragStart
+}: {
+  session: AudioSession
+  volume: number
+  onVolumeChange: (sessionId: string, e: React.FormEvent<HTMLInputElement>) => void
+  onMuteToggle: (sessionId: string, currentMuted: boolean) => void
+  onDragStart: (sessionId: string) => void
+}) {
+  return (
+    <motion.div
+      key={session.id}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="glass-dark rounded-md p-3 border border-white/5 hover:border-white/10 transition-all duration-150"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-xs text-white/60 font-light truncate">
+            {session.name}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-white/40 font-mono">
+            {volume}%
+          </span>
+          <button
+            onClick={() => onMuteToggle(session.id, session.isMuted)}
+            className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold
+                      transition-all duration-150 border
+                      ${
+                        session.isMuted
+                          ? 'bg-red-500/20 border-red-500/40 text-red-400'
+                          : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'
+                      }`}
+          >
+            {session.isMuted ? 'M' : 'S'}
+          </button>
+        </div>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value={volume}
+        onChange={(e) => onVolumeChange(session.id, e)}
+        onInput={(e) => onVolumeChange(session.id, e)}
+        onMouseDown={(e) => {
+          e.stopPropagation()
+          onDragStart(session.id)
+        }}
+        onTouchStart={(e) => {
+          e.stopPropagation()
+          onDragStart(session.id)
+        }}
+        draggable={false}
+        disabled={session.isMuted}
+        className="w-full h-0.5 bg-white/10 rounded-full appearance-none cursor-pointer will-change-auto
+                 disabled:opacity-30 disabled:cursor-not-allowed
+                 [&::-webkit-slider-thumb]:appearance-none
+                 [&::-webkit-slider-thumb]:w-2.5
+                 [&::-webkit-slider-thumb]:h-2.5
+                 [&::-webkit-slider-thumb]:rounded-full
+                 [&::-webkit-slider-thumb]:bg-white/60
+                 [&::-webkit-slider-thumb]:hover:bg-white/90
+                 [&::-webkit-slider-thumb]:transition-colors
+                 [&::-webkit-slider-thumb]:cursor-grab
+                 [&::-webkit-slider-thumb]:active:cursor-grabbing
+                 disabled:[&::-webkit-slider-thumb]:cursor-not-allowed"
+      />
+    </motion.div>
+  )
+})
+
 const MasterVolumeControl = memo(function MasterVolumeControl({
   storeMasterVolume
 }: {
@@ -170,7 +259,7 @@ export function VolumeMixer() {
       <MasterVolumeControl storeMasterVolume={storeMasterVolume} />
 
       {/* Session List */}
-      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin">
+      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
         <AnimatePresence>
           {sessions.length === 0 ? (
             <motion.div
@@ -185,69 +274,14 @@ export function VolumeMixer() {
             </motion.div>
           ) : (
             sessions.map((session) => (
-              <motion.div
+              <SessionControl
                 key={session.id}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="glass-dark rounded-md p-3 border border-white/5 hover:border-white/10 transition-all duration-150"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-xs text-white/60 font-light truncate">
-                      {session.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/40 font-mono">
-                      {getSessionVolume(session)}%
-                    </span>
-                    <button
-                      onClick={() => handleMuteToggle(session.id, session.isMuted)}
-                      className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold
-                                transition-all duration-150 border
-                                ${
-                                  session.isMuted
-                                    ? 'bg-red-500/20 border-red-500/40 text-red-400'
-                                    : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'
-                                }`}
-                    >
-                      {session.isMuted ? 'M' : 'S'}
-                    </button>
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={getSessionVolume(session)}
-                  onChange={(e) => handleVolumeChange(session.id, e)}
-                  onInput={(e) => handleVolumeChange(session.id, e)}
-                  onMouseDown={(e) => {
-                    e.stopPropagation()
-                    handleSessionDragStart(session.id)
-                  }}
-                  onTouchStart={(e) => {
-                    e.stopPropagation()
-                    handleSessionDragStart(session.id)
-                  }}
-                  draggable={false}
-                  disabled={session.isMuted}
-                  className="w-full h-0.5 bg-white/10 rounded-full appearance-none cursor-pointer will-change-auto
-                           disabled:opacity-30 disabled:cursor-not-allowed
-                           [&::-webkit-slider-thumb]:appearance-none
-                           [&::-webkit-slider-thumb]:w-2.5
-                           [&::-webkit-slider-thumb]:h-2.5
-                           [&::-webkit-slider-thumb]:rounded-full
-                           [&::-webkit-slider-thumb]:bg-white/60
-                           [&::-webkit-slider-thumb]:hover:bg-white/90
-                           [&::-webkit-slider-thumb]:transition-colors
-                           [&::-webkit-slider-thumb]:cursor-grab
-                           [&::-webkit-slider-thumb]:active:cursor-grabbing
-                           disabled:[&::-webkit-slider-thumb]:cursor-not-allowed"
-                />
-              </motion.div>
+                session={session}
+                volume={getSessionVolume(session)}
+                onVolumeChange={handleVolumeChange}
+                onMuteToggle={handleMuteToggle}
+                onDragStart={handleSessionDragStart}
+              />
             ))
           )}
         </AnimatePresence>

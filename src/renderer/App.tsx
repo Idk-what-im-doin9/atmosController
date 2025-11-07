@@ -14,8 +14,8 @@ function App() {
         <div className="glass-window glow-border rounded-lg p-6 min-w-[420px] max-w-[500px]">
           {/* Header bar (draggable) */}
           <div className="drag-region mb-6 flex items-center justify-between">
-            <h1 className="text-lg font-light text-white/90 tracking-wide">
-              ETHEREAL MIXER
+            <h1 className="text-xl font-extralight text-white/95 tracking-[0.15em] uppercase" style={{ fontFamily: "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif", letterSpacing: '0.15em' }}>
+              atmosController
             </h1>
             <div className="no-drag-region flex gap-1.5">
               <button
@@ -35,10 +35,7 @@ function App() {
           </div>
 
           {/* Minimal info bar */}
-          <div className="glass rounded-md px-3 py-1.5 mt-4 no-drag-region flex items-center justify-between">
-            <div className="text-[10px] text-white/30 font-light tracking-wider">
-              PHASE 2 COMPLETE
-            </div>
+          <div className="glass rounded-md px-3 py-1.5 mt-4 no-drag-region flex items-center justify-end">
             <kbd className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/40 border border-white/10 font-mono">
               Alt+Shift+D
             </kbd>

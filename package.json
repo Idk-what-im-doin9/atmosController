@@ -1,6 +1,6 @@
 {
   "name": "atmoscontroller",
-  "productName": "Ethereal Mixer",
+  "productName": "atmosController",
   "version": "0.1.0",
   "description": "A lightweight, transparent audio control overlay with system-wide volume mixing and audio visualization",
   "main": "dist-electron/main.js",
@@ -40,7 +40,7 @@
   },
   "build": {
     "appId": "com.atmoscontroller.app",
-    "productName": "Ethereal Mixer",
+    "productName": "atmosController",
     "directories": {
       "output": "release"
     },
