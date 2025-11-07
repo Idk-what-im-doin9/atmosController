@@ -21,6 +21,7 @@ const createWindow = () => {
     alwaysOnTop: true,
     skipTaskbar: false,
     resizable: true,
+    title: 'atmosController',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
