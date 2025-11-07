@@ -46,8 +46,8 @@ const createWindow = () => {
 app.whenReady().then(() => {
   createWindow()
 
-  // Register global hotkey (Ctrl+Shift+M) to toggle window
-  globalShortcut.register('CommandOrControl+Shift+M', () => {
+  // Register global hotkey (Alt+Shift+D) to toggle window
+  globalShortcut.register('Alt+Shift+D', () => {
     if (mainWindow) {
       if (mainWindow.isVisible()) {
         mainWindow.hide()

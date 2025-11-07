@@ -1,88 +1,59 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 
 function App() {
-  const [isMinimized, setIsMinimized] = useState(false)
-
   return (
     <div className="w-screen h-screen flex items-center justify-center p-8">
-      {/* Main container with semi-transparent background */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
         className="relative"
       >
-        {/* Glass morphism window */}
-        <div className="glass-window rounded-2xl p-8 min-w-[600px] min-h-[400px]">
+        {/* Main glass window with animated glow */}
+        <div className="glass-window glow-border rounded-lg p-6 min-w-[540px]">
           {/* Header bar (draggable) */}
-          <div className="drag-region mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">
-              Ethereal Mixer
+          <div className="drag-region mb-8 flex items-center justify-between">
+            <h1 className="text-lg font-light text-white/90 tracking-wide">
+              ETHEREAL MIXER
             </h1>
-            <div className="no-drag-region flex gap-2">
-              <button
-                onClick={() => setIsMinimized(!isMinimized)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20
-                          transition-colors flex items-center justify-center
-                          text-white text-sm"
-              >
-                _
-              </button>
+            <div className="no-drag-region flex gap-1.5">
               <button
                 onClick={() => window.close()}
-                className="w-8 h-8 rounded-full bg-red-500/30 hover:bg-red-500/50
-                          transition-colors flex items-center justify-center
-                          text-white text-sm"
+                className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/10
+                          transition-all duration-200 flex items-center justify-center
+                          text-white/60 hover:text-white/90 text-xs border border-white/5"
               >
                 ×
               </button>
             </div>
           </div>
 
-          {/* Content area */}
-          <div className="space-y-6">
-            {/* Welcome message */}
-            <div className="glass rounded-xl p-6 no-drag-region">
-              <h2 className="text-xl font-semibold text-white mb-2">
-                Welcome to Ethereal Mixer!
-              </h2>
-              <p className="text-gray-300 text-sm">
-                Your lightweight, transparent audio control overlay is now running.
-              </p>
+          {/* Feature cards */}
+          <div className="grid grid-cols-3 gap-3 mb-6 no-drag-region">
+            <div className="glass-dark rounded-md p-4 hover:bg-white/3 transition-all duration-150 cursor-pointer border border-white/5 hover:border-white/10">
+              <div className="text-white/40 text-xs font-light mb-1">MIXER</div>
+              <div className="text-white/20 text-[10px]">Phase 2</div>
             </div>
 
-            {/* Feature preview boxes */}
-            <div className="grid grid-cols-3 gap-4 no-drag-region">
-              <div className="glass-dark rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="text-3xl mb-2">🎚️</div>
-                <div className="text-white font-medium text-sm">Volume Mixer</div>
-                <div className="text-gray-400 text-xs mt-1">Coming soon</div>
-              </div>
-
-              <div className="glass-dark rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="text-3xl mb-2">📊</div>
-                <div className="text-white font-medium text-sm">Visualizer</div>
-                <div className="text-gray-400 text-xs mt-1">Coming soon</div>
-              </div>
-
-              <div className="glass-dark rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="text-3xl mb-2">⚙️</div>
-                <div className="text-white font-medium text-sm">Settings</div>
-                <div className="text-gray-400 text-xs mt-1">Coming soon</div>
-              </div>
+            <div className="glass-dark rounded-md p-4 hover:bg-white/3 transition-all duration-150 cursor-pointer border border-white/5 hover:border-white/10">
+              <div className="text-white/40 text-xs font-light mb-1">VISUALIZER</div>
+              <div className="text-white/20 text-[10px]">Phase 3</div>
             </div>
 
-            {/* Info section */}
-            <div className="glass rounded-xl p-4 no-drag-region">
-              <div className="text-xs text-gray-300 space-y-1">
-                <div className="flex justify-between">
-                  <span>Press <kbd className="px-2 py-1 bg-white/10 rounded">Ctrl+Shift+M</kbd> to toggle visibility</span>
-                </div>
-                <div className="text-gray-400 mt-2">
-                  Phase 1: Foundation - Setup Complete ✓
-                </div>
-              </div>
+            <div className="glass-dark rounded-md p-4 hover:bg-white/3 transition-all duration-150 cursor-pointer border border-white/5 hover:border-white/10">
+              <div className="text-white/40 text-xs font-light mb-1">SETTINGS</div>
+              <div className="text-white/20 text-[10px]">Phase 4</div>
             </div>
+          </div>
+
+          {/* Minimal info bar */}
+          <div className="glass rounded-md px-3 py-2 no-drag-region flex items-center justify-between">
+            <div className="text-[10px] text-white/30 font-light tracking-wider">
+              PHASE 1 COMPLETE
+            </div>
+            <kbd className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/40 border border-white/10 font-mono">
+              Alt+Shift+D
+            </kbd>
           </div>
         </div>
       </motion.div>
