@@ -1,0 +1,362 @@
+# atmosController - Claude Save File
+
+## Project Overview
+**atmosController** is a lightweight, transparent audio control overlay application built with Electron, React, and TypeScript. It provides system-wide volume mixing and audio visualization for Windows using PowerShell scripts to interface with the Windows Audio Session API (WASAPI).
+
+**Current Version:** 0.1.1
+**Repository:** https://github.com/Idk-what-im-doin9/atmosController
+**Branch:** powershell-bridge
+
+## Tech Stack
+- **Frontend:** React 18 + TypeScript + Vite
+- **UI Framework:** TailwindCSS + Framer Motion
+- **Desktop Framework:** Electron 28
+- **State Management:** Zustand
+- **Build Tool:** electron-builder
+- **Audio Control:** PowerShell scripts (WASAPI)
+
+## Project Structure
+
+```
+atmosController/
+├── src/
+│   ├── main/                     # Electron main process
+│   │   ├── main.ts              # Entry point, window creation
+│   │   ├── services/
+│   │   │   └── audioSessionManager.ts  # PowerShell bridge for audio control
+│   │   └── ipc/
+│   │       ├── audioHandlers.ts  # IPC handlers for audio
+│   │       └── windowHandlers.ts # IPC handlers for window
+│   └── renderer/                 # React frontend
+│       ├── App.tsx              # Main app component
+│       ├── components/
+│       │   ├── VolumeMixer.tsx  # Volume controls for apps
+│       │   └── AudioVisualizer.tsx  # Animated visualizer
+│       ├── services/
+│       │   ├── audioService.ts  # Frontend audio service
+│       │   └── windowService.ts # Window control service
+│       └── stores/
+│           └── audioStore.ts    # Zustand state management
+├── scripts/                      # PowerShell scripts
+│   ├── AudioSessionControl.ps1  # Main WASAPI script
+│   ├── Get-MasterVolume.ps1
+│   ├── Set-MasterVolume.ps1
+│   └── README.md
+├── dist/                        # Vite build output
+├── dist-electron/               # Electron build output
+├── release/                     # electron-builder output
+│   └── win-unpacked/
+│       └── atmosController.exe
+├── package.json
+├── PROBLEMS.md                  # Known issues tracker
+└── claude_save                  # This file
+
+```
+
+## Key Features
+
+1. **Per-Application Volume Control**
+   - Control volume for each running audio application
+   - Mute/unmute individual apps
+   - Real-time session detection
+
+2. **Master Volume Control**
+   - System-wide volume adjustment
+   - Synced with Windows volume mixer
+
+3. **Audio Visualizer**
+   - Animated frequency bars
+   - Volume-reactive animation
+   - ON/OFF toggle
+
+4. **Transparent Overlay**
+   - Always-on-top window
+   - Glass morphism UI design
+   - Frameless, draggable interface
+   - Global hotkey: Alt+Shift+D
+
+## Important File Details
+
+### src/main/services/audioSessionManager.ts
+**Purpose:** Bridge between Electron and PowerShell scripts for audio control
+
+**Key Methods:**
+- `fetchAudioSessions()` - Gets all active audio sessions
+- `setVolume(sessionId, volume)` - Sets app-specific volume
+- `setMute(sessionId, muted)` - Mutes/unmutes specific app
+- `setMasterVolume(volume)` - Sets system volume
+
+**Scripts Path Resolution:**
+```typescript
+if (app.isPackaged) {
+  this.scriptsPath = path.join(process.resourcesPath, 'scripts')
+} else {
+  this.scriptsPath = path.join(__dirname, '../scripts')
+}
+```
+
+### src/renderer/components/AudioVisualizer.tsx
+**Purpose:** Animated visualizer component with app branding
+
+**Features:**
+- Canvas-based bar visualization
+- Wave-pattern animation
+- Volume-reactive bars
+- Clears canvas when toggled OFF
+- Draggable title area
+- ON/OFF toggle button
+
+### src/renderer/components/VolumeMixer.tsx
+**Purpose:** Main volume control interface
+
+**Features:**
+- Master volume slider
+- Per-app volume sliders
+- Mute buttons for each app
+- Throttled/debounced updates (100ms throttle, 30ms debounce)
+- Optimistic UI updates
+- App icons display
+
+## Build Process
+
+### Development
+```bash
+npm run dev
+```
+- Runs Vite dev server on localhost:5173
+- Opens Electron window with DevTools
+- Hot reload enabled
+
+### Production Build
+```bash
+npm run build
+```
+**Note:** Currently has issues with electron-builder's winCodeSign. Workaround:
+1. Run build command (will fail at packaging stage)
+2. TypeScript and Vite builds succeed
+3. Manually copy built files to release folder
+
+**Manual Build Update Process:**
+```bash
+# After tsc && vite build succeeds:
+powershell -Command "Remove-Item 'release\win-unpacked\resources\app.asar' -Force"
+powershell -Command "Remove-Item 'release\win-unpacked\resources\app\*' -Recurse -Force"
+powershell -Command "Copy-Item -Path 'dist' -Destination 'release\win-unpacked\resources\app\' -Recurse -Force"
+powershell -Command "Copy-Item -Path 'dist-electron' -Destination 'release\win-unpacked\resources\app\' -Recurse -Force"
+powershell -Command "Copy-Item -Path 'package.json' -Destination 'release\win-unpacked\resources\app\' -Force"
+```
+
+### Release Process
+1. Update version in package.json
+2. Build application
+3. Commit changes
+4. Create and push git tag
+5. Create zip of win-unpacked folder
+6. Create GitHub release with gh CLI
+
+## Configuration
+
+### package.json - Build Config
+```json
+{
+  "build": {
+    "appId": "com.atmoscontroller.app",
+    "productName": "atmosController",
+    "extraResources": ["scripts/**/*"],
+    "win": {
+      "target": [{"target": "dir", "arch": ["x64"]}],
+      "icon": "assets/icon.ico",
+      "executableName": "atmosController",
+      "signDlls": false,
+      "signExts": []
+    }
+  }
+}
+```
+
+### Window Configuration (main.ts)
+```typescript
+{
+  width: 800,
+  height: 1000,  // Increased from 850
+  frame: false,
+  transparent: true,
+  alwaysOnTop: true,
+  skipTaskbar: false,
+  resizable: true,
+  title: 'atmosController',
+  webPreferences: {
+    nodeIntegration: true,
+    contextIsolation: false,
+    backgroundThrottling: false
+  }
+}
+```
+
+## Known Issues (PROBLEMS.md)
+
+### High Priority
+1. ~~Window Size~~ ✅ FIXED in v0.1.1 (increased to 1000px)
+2. ~~Process Name~~ ✅ FIXED in v0.1.1 (shows atmosController)
+
+### Medium Priority
+3. ~~Visualizer Bars Freeze~~ ✅ FIXED in v0.1.1 (clears on toggle)
+4. ~~UI Layout~~ ✅ FIXED in v0.1.1 (title in visualizer)
+
+### Low Priority
+- Visualizer doesn't react to actual audio frequencies (uses volume levels)
+- electron-builder winCodeSign cache issues on Windows
+
+## Recent Changes (v0.1.1)
+
+### Fixed
+- Window height increased from 850px to 1000px
+- Visualizer bars now clear when toggled OFF
+- Window title shows "atmosController" in taskbar
+- Title moved into visualizer component header
+- Scripts path resolution fixed for development
+
+### UI Improvements
+- Title text is draggable
+- Toggle button is clickable (non-draggable)
+- More compact layout
+
+## PowerShell Scripts
+
+Located in `/scripts` directory, copied to `resources/scripts/` in production.
+
+### AudioSessionControl.ps1
+Main WASAPI interface script.
+
+**Actions:**
+- `list` - Get all audio sessions
+- `setvolume` - Set session volume by PID
+- `setmute` - Mute/unmute session by PID
+
+**Usage:**
+```powershell
+.\AudioSessionControl.ps1 -Action list
+.\AudioSessionControl.ps1 -Action setvolume -ProcessId 1234 -Volume 75
+.\AudioSessionControl.ps1 -Action setmute -ProcessId 1234 -Mute 1
+```
+
+### Get-MasterVolume.ps1 / Set-MasterVolume.ps1
+System volume control scripts.
+
+## Development Notes
+
+### Drag Regions
+- Use `drag-region` class for draggable areas
+- Use `no-drag-region` class for interactive elements
+- Title text has `drag-region`, toggle button has `no-drag-region`
+
+### Audio Update Cycle
+1. `audioManager.startMonitoring()` polls every 1 second
+2. `fetchAudioSessions()` executes PowerShell script
+3. Sessions sent to renderer via IPC (`audio-sessions-updated`)
+4. Zustand store updates
+5. React components re-render
+
+### Volume Control Flow
+1. User adjusts slider (local state updates immediately)
+2. Throttle: Send update every 100ms during drag
+3. Debounce: Final update 30ms after last change
+4. IPC call to main process
+5. PowerShell script execution
+6. Next polling cycle confirms change
+
+## Testing
+
+### Manual Testing Checklist
+- [ ] Window opens at correct size (1000px height)
+- [ ] Audio sessions are detected and displayed
+- [ ] Master volume slider controls system volume
+- [ ] Per-app volume sliders work
+- [ ] Mute buttons function correctly
+- [ ] Visualizer animates
+- [ ] Visualizer clears when toggled OFF
+- [ ] Alt+Shift+D hotkey toggles window
+- [ ] Window is draggable by title text
+- [ ] Toggle button is clickable
+- [ ] Taskbar shows "atmosController"
+
+## Future Improvements
+
+### Potential Features
+- Real audio frequency analysis for visualizer
+- Custom hotkey configuration
+- Multiple themes/color schemes
+- Session grouping
+- Volume presets/profiles
+- System tray icon
+- Auto-start on Windows boot
+
+### Technical Debt
+- Resolve electron-builder winCodeSign issues
+- Add proper code signing
+- Create NSIS installer target
+- Add automated testing
+- Improve error handling in PowerShell scripts
+
+## Releases
+
+### v0.1.0 (Initial Release)
+- Basic volume control functionality
+- PowerShell-based audio control
+- Transparent overlay UI
+- Audio visualizer
+
+### v0.1.1 (Current)
+- Fixed window size issue
+- Fixed visualizer freeze issue
+- Fixed branding (taskbar name)
+- Improved UI layout
+- Better development experience
+
+## Environment
+
+### Development
+- Node.js required
+- npm for package management
+- PowerShell (Windows built-in)
+- Vite dev server on port 5173
+
+### Production
+- Windows 10/11
+- PowerShell (pre-installed)
+- No additional dependencies
+
+## Git Workflow
+
+**Main Branch:** powershell-bridge (will be merged to main later)
+
+**Commit Style:**
+- Descriptive commit messages
+- Include affected files/features
+- Add Claude Code attribution
+- Use conventional commit format when appropriate
+
+**Release Tags:**
+- Format: `v0.1.x`
+- Created from powershell-bridge
+- Each tag has corresponding GitHub release
+
+## Support & Resources
+
+- **GitHub Issues:** Track bugs and feature requests
+- **PROBLEMS.md:** Known issues and planned improvements
+- **PowerShell Scripts README:** Documentation for audio scripts
+
+## Notes for Claude
+
+- Build process requires manual file copying due to winCodeSign issues
+- Always test in both dev and production builds
+- Scripts path is different in dev vs production
+- Window title must be set in both main.ts and index.html
+- Commit changes before building/releasing
+- Use `gh` CLI for GitHub operations
+
+---
+
+**Last Updated:** 2025-11-08
+**Session Summary:** Fixed all known issues from PROBLEMS.md, released v0.1.1
