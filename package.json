@@ -1,7 +1,7 @@
 {
   "name": "atmoscontroller",
   "productName": "atmosController",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A lightweight, transparent audio control overlay with system-wide volume mixing and audio visualization",
   "main": "dist-electron/main.js",
   "author": "Idk-what-im-doin9",
@@ -53,10 +53,15 @@
     ],
     "win": {
       "target": [
-        "dir"
+        {
+          "target": "dir",
+          "arch": ["x64"]
+        }
       ],
       "icon": "assets/icon.ico",
-      "executableName": "atmosController"
+      "executableName": "atmosController",
+      "signDlls": false,
+      "signExts": []
     },
     "nsis": {
       "oneClick": false,
