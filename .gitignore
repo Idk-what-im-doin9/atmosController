@@ -225,3 +225,15 @@ dist_electron/
 
 # Project-specific files
 claude_save.txt
+PROPOSAL.md
+BRANCHES.md
+HOW_TO_SUBMIT_PR.md
+PR_SUMMARY.md
+PULL_REQUEST.md
+LINUX_FORK_SUMMARY.md
+docs/LINUX_FORK_SUMMARY.md
+install.sh
+uninstall.sh
+*_NOTES.md
+*_INTERNAL.md
+*_DEV.md
