@@ -1,6 +1,6 @@
 {
   "name": "atmoscontroller",
-  "productName": "Ethereal Mixer",
+  "productName": "Atmos Controller",
   "version": "0.1.0",
   "description": "A lightweight, transparent audio control overlay with system-wide volume mixing and audio visualization",
   "main": "dist-electron/main.js",
@@ -10,10 +10,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
+    "build:linux": "tsc && vite build && electron-builder --linux",
+    "build:win": "tsc && vite build && electron-builder --win",
+    "build:all": "tsc && vite build && electron-builder -mwl",
     "preview": "vite preview",
     "electron:dev": "vite",
     "electron:build": "vite build && electron-builder",
-    "electron:preview": "vite build && electron ."
+    "electron:preview": "vite build && electron .",
+    "postinstall": "node scripts/check-platform.js"
   },
   "dependencies": {
     "electron-store": "^8.1.0",
@@ -40,13 +44,14 @@
   },
   "build": {
     "appId": "com.atmoscontroller.app",
-    "productName": "Ethereal Mixer",
+    "productName": "Atmos Controller",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "!**/*.map"
     ],
     "win": {
       "target": [
@@ -57,6 +62,53 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "tar.gz"
+      ],
+      "category": "AudioVideo",
+      "icon": "assets/icon.png",
+      "description": "A lightweight, transparent audio control overlay with system-wide volume mixing",
+      "desktop": {
+        "Name": "Atmos Controller",
+        "Comment": "Advanced per-application audio mixer for Linux",
+        "Categories": "AudioVideo;Audio;Mixer;",
+        "Keywords": "audio;volume;mixer;pulseaudio;pipewire;control;",
+        "StartupWMClass": "atmos-controller"
+      },
+      "maintainer": "Idk-what-im-doin9",
+      "vendor": "Atmos Controller Project"
+    },
+    "deb": {
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3",
+        "pulseaudio"
+      ],
+      "afterInstall": "build/linux/postinst.sh",
+      "afterRemove": "build/linux/postrm.sh"
+    },
+    "rpm": {
+      "depends": [
+        "libnotify",
+        "libappindicator",
+        "libXtst",
+        "nss",
+        "pulseaudio"
+      ],
+      "afterInstall": "build/linux/postinst.sh",
+      "afterRemove": "build/linux/postrm.sh"
+    },
+    "appImage": {
+      "license": "MIT"
     }
   }
 }
